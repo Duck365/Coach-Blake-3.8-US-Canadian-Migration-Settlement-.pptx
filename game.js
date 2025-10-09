@@ -12,6 +12,7 @@ document.title = "The Great Climb Adventure";
 
 // Player
 const player = { x: 0, y: 0, w: 3, h: 3, vx: 0, vy: 0, speed: 2, jump: -5, onGround: false };
+let lastDirection = 1; // 1 for right (default), -1 for left <--- Tracks the last direction for shooting
 
 // Platform settings
 const PLATFORM_WIDTH = 4; // Default tiny width for regular platforms
@@ -22,19 +23,19 @@ let level = 1;
 // Enemy and Bullet Constants
 const ENEMY_SIZE = 3, ENEMY_COLOR = "red";
 const ENEMY_SPEED = 0.50; // much slower
-const ENEMY_MAX_HP = 5; // <--- NEW: Enemies require 5 hits to defeat
-const BULLET_WIDTH = 20, BULLET_HEIGHT = 20, BULLET_SPEED = 20;
+const ENEMY_MAX_HP = 5; // Enemies require 5 hits to defeat
+const BULLET_WIDTH = 13, BULLET_HEIGHT = 10, BULLET_SPEED = 50;
 
 // Enemies, Bullets, and Seekers arrays
 let enemies = [];
 let bullets = [];
-let seekers = []; // <--- NEW: Array for purple seekers
+let seekers = []; // Array for purple seekers
 
 // Seeker Enemy Constants (The 20 flying purple pixels)
 const SEEKER_COUNT = 20;
 const SEEKER_SIZE = 2;
 const SEEKER_COLOR = "purple";
-const SEEKER_SPEED = 0.8; // They slowly fly toward the player
+const SEEKER_SPEED = 1; // They slowly fly toward the player
 
 // Generate platforms and enemies
 function generatePlatforms() {
@@ -46,8 +47,9 @@ function generatePlatforms() {
   // Platform vertical spacing (super close)
   const spacing = 28;
 
-  // First platform (bottom left)
-  let startPlat = { x: 40, y: canvas.height - 40, w: PLATFORM_WIDTH, h: PLATFORM_HEIGHT };
+  // Continuous Ground Platform (covers the entire bottom edge)
+  // This acts as the floor, preventing the player from falling off the bottom.
+  let startPlat = { x: 0, y: canvas.height - 10, w: canvas.width, h: 10 }; 
   platforms.push(startPlat);
 
   // Add random platforms
@@ -97,9 +99,9 @@ function generatePlatforms() {
       });
   }
 
-  // Spawn player exactly above the first platform
-  player.x = startPlat.x + startPlat.w / 2 - player.w / 2;
-  player.y = startPlat.y - player.h;
+  // Spawn player on the left side of the new continuous ground platform
+  player.x = 20;
+  player.y = startPlat.y - player.h; // Player starts right above the new ground
   player.vx = 0; player.vy = 0;
   player.onGround = false; // You can always jump now anyway!
 }
@@ -150,12 +152,32 @@ function draw() {
 let keys = {};
 window.onkeydown = e => {
   keys[e.key] = true;
+  
+  // Track the last horizontal direction pressed
+  if (e.key === 'a' || e.key === 'ArrowLeft') {
+      lastDirection = -1;
+  } else if (e.key === 'd' || e.key === 'ArrowRight') {
+      lastDirection = 1;
+  }
+  
   // Shoot with F or Enter
   if ((e.key === "f" || e.key === "F" || e.key === "Enter")) {
+    const bulletVelocity = BULLET_SPEED * lastDirection;
+    let startX;
+    
+    // Adjust starting position so the bullet appears on the edge of the player circle
+    if (lastDirection === 1) {
+        // Shooting Right: start at player's right edge
+        startX = player.x + player.w;
+    } else {
+        // Shooting Left: start at player's left edge minus bullet width
+        startX = player.x - BULLET_WIDTH;
+    }
+    
     bullets.push({
-      x: player.x + player.w,
+      x: startX,
       y: player.y + player.h/2 - BULLET_HEIGHT/2,
-      vx: BULLET_SPEED,
+      vx: bulletVelocity, // Uses the tracked direction
       vy: 0
     });
   }
@@ -178,6 +200,7 @@ function update() {
   player.x += player.vx;
   player.y += player.vy;
 
+  // Screen Edge Borders: Stop player from moving off the sides
   if (player.x < 0) player.x = 0;
   if (player.x + player.w > canvas.width) player.x = canvas.width - player.w;
 
@@ -201,10 +224,7 @@ function update() {
     }
   });
 
-  // FALLING: Restart if below screen
-  if (player.y > canvas.height + 10) {
-    generatePlatforms();
-  }
+  // NOTE: FALLING DEATH removed. Player will now land on the continuous ground platform.
 
   // Update bullets
   bullets.forEach(b => {
