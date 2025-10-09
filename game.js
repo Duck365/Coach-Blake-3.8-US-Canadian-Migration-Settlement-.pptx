@@ -13,7 +13,7 @@ const player = { x: 0, y: 0, w: 3, h: 3, vx: 0, vy: 0, speed: 2, jump: -5, onGro
 
 // Platform settings
 const PLATFORM_WIDTH = 60; // Longer for enemies
-const PLATFORM_HEIGHT = 2;
+const PLATFORM_HEIGHT = 1;
 let platforms = [];
 let level = 1;
 
@@ -31,7 +31,7 @@ function generatePlatforms() {
   bullets = [];
 
   // Platform vertical spacing (much closer now)
-  const spacing = 40;
+  const spacing = 20;
 
   // Starting platform (always near bottom left)
   let startPlat = { x: 40, y: canvas.height - 40, w: PLATFORM_WIDTH, h: PLATFORM_HEIGHT };
