@@ -9,10 +9,11 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 // Player
-const player = { x: 50, y: canvas.height - 40, w: 3, h: 3, vx: 0, vy: 0, speed: 2, jump: -5, onGround: false };
+const player = { x: 0, y: 0, w: 3, h: 3, vx: 0, vy: 0, speed: 2, jump: -5, onGround: false };
 
 // Platform settings
-const PLATFORM_WIDTH = 15, PLATFORM_HEIGHT = 2;
+const PLATFORM_WIDTH = 40; // Longer for enemies
+const PLATFORM_HEIGHT = 2;
 let platforms = [];
 let level = 1;
 
@@ -20,21 +21,29 @@ let level = 1;
 let enemies = [];
 let bullets = [];
 const ENEMY_SIZE = 3, ENEMY_COLOR = "red";
-const BULLET_WIDTH = 6, BULLET_HEIGHT = 2, BULLET_SPEED = 5;
+const ENEMY_SPEED = 0.5; // SLOWER
+const BULLET_WIDTH = 6, BULLET_HEIGHT = 2, BULLET_SPEED = 7;
 
 // Generate random platforms and enemies
 function generatePlatforms() {
   platforms = [];
   enemies = [];
   bullets = [];
-  // Starting platform
-  platforms.push({ x: 30, y: canvas.height - 30, w: PLATFORM_WIDTH, h: PLATFORM_HEIGHT });
-  // Random middle platforms
-  for (let i = 0; i < 4 + level; i++) {
+
+  // Platform vertical spacing (closer together)
+  const spacing = Math.max(60, canvas.height / (6 + level));
+
+  // Starting platform (always near bottom left)
+  let startPlat = { x: 30, y: canvas.height - 40, w: PLATFORM_WIDTH, h: PLATFORM_HEIGHT };
+  platforms.push(startPlat);
+
+  // Random middle platforms, spaced vertically
+  for (let i = 1; i < 4 + level; i++) {
     let plat = {
-      x: Math.random() * (canvas.width - PLATFORM_WIDTH),
-      y: Math.random() * (canvas.height - 100),
-      w: PLATFORM_WIDTH, h: PLATFORM_HEIGHT
+      x: 60 + Math.random() * (canvas.width - PLATFORM_WIDTH - 120),
+      y: canvas.height - 40 - i * spacing,
+      w: PLATFORM_WIDTH,
+      h: PLATFORM_HEIGHT
     };
     platforms.push(plat);
     // 50% chance to put an enemy on this platform
@@ -50,14 +59,20 @@ function generatePlatforms() {
       });
     }
   }
-  // Finish platform (green)
-  platforms.push({ x: canvas.width - 50, y: 40, w: PLATFORM_WIDTH, h: PLATFORM_HEIGHT, finish: true });
+  // Finish platform (top right)
+  let finishPlat = { x: canvas.width - 80, y: 40, w: PLATFORM_WIDTH, h: PLATFORM_HEIGHT, finish: true };
+  platforms.push(finishPlat);
+
+  // Spawn player on top of the first platform
+  player.x = startPlat.x + startPlat.w / 2 - player.w / 2;
+  player.y = startPlat.y - player.h;
+  player.vx = 0; player.vy = 0;
 }
 
 // Draw everything
 function draw() {
-  // Draw background image
-  if (bgImage.complete) {
+  // Draw background image OR fallback color
+  if (bgImage.complete && bgImage.naturalWidth > 0) {
     ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
   } else {
     ctx.fillStyle = "#c3e6e8";
@@ -100,7 +115,7 @@ window.onkeydown = e => {
     bullets.push({
       x: player.x + player.w,
       y: player.y + player.h/2 - BULLET_HEIGHT/2,
-      vx: 7, // shoot right only for simplicity
+      vx: BULLET_SPEED,
       vy: 0
     });
   }
@@ -119,9 +134,7 @@ function update() {
   player.y += player.vy;
   if (player.x < 0) player.x = 0;
   if (player.x + player.w > canvas.width) player.x = canvas.width - player.w;
-  if (player.y + player.h > canvas.height) {
-    player.y = canvas.height - player.h; player.vy = 0; player.onGround = true;
-  }
+
   // Platform collision
   player.onGround = false;
   platforms.forEach(p => {
@@ -136,23 +149,30 @@ function update() {
       player.vy = 0;
       player.onGround = true;
       if (p.finish) {
-        level++; player.x = 50; player.y = canvas.height - 40; generatePlatforms();
+        level++; generatePlatforms();
       }
     }
   });
+
+  // FALLING: Restart if below screen
+  if (player.y > canvas.height) {
+    generatePlatforms();
+  }
+
   // Update bullets
   bullets.forEach(b => {
     b.x += b.vx;
     b.y += b.vy;
   });
-  // Remove bullets out of screen
   bullets = bullets.filter(b => b.x < canvas.width && b.x > 0);
-  // Move enemies
+
+  // Move enemies, SLOWER
   enemies.forEach(e => {
-    e.x += e.dir * 1.2; // enemy speed
+    e.x += e.dir * ENEMY_SPEED;
     if (e.x < e.baseX) { e.x = e.baseX; e.dir *= -1; }
     if (e.x > e.baseX + e.range) { e.x = e.baseX + e.range; e.dir *= -1; }
   });
+
   // Bullet/enemy collision
   bullets = bullets.filter(bullet => {
     for (let i = 0; i < enemies.length; i++) {
@@ -169,7 +189,8 @@ function update() {
     }
     return true;
   });
-  // Enemy/player collision (reset level)
+
+  // Enemy/player collision (restart)
   enemies.forEach(e => {
     if (
       player.x < e.x + e.w &&
@@ -177,8 +198,7 @@ function update() {
       player.y < e.y + e.h &&
       player.y + player.h > e.y
     ) {
-      // Reset player position
-      player.x = 50; player.y = canvas.height - 40;
+      generatePlatforms();
     }
   });
 }
