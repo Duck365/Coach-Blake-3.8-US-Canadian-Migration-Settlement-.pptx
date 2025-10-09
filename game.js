@@ -141,7 +141,7 @@ function draw() {
   ctx.arc(player.x + player.w/2, player.y + player.h/2, player.w/2, 0, Math.PI*2);
   ctx.fill();
   // Level text
-  ctx.font = "16px monospace";
+  ctx.font = "5px monospace";
   ctx.fillStyle = "black";
   ctx.fillText("Level: " + level, 20, 30);
 }
