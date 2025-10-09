@@ -21,7 +21,7 @@ let enemies = [];
 let bullets = [];
 const ENEMY_SIZE = 3, ENEMY_COLOR = "red";
 const ENEMY_SPEED = 0.50; // much slower
-const BULLET_WIDTH = 20, BULLET_HEIGHT = 20, BULLET_SPEED = 20;
+const BULLET_WIDTH = 20, BULLET_HEIGHT = 20, BULLET_SPEED = 70;
 
 // Generate platforms and enemies
 function generatePlatforms() {
@@ -59,7 +59,7 @@ function generatePlatforms() {
     }
   }
   // Finish platform (top right)
-  let finishPlat = { x: canvas.width - 120, y: 40, w: PLATFORM_WIDTH, h: PLATFORM_HEIGHT, finish: true };
+  let finishPlat = { x: canvas.width - 120, y: 40, w: 100, h: 20, finish: true };
   platforms.push(finishPlat);
 
   // Spawn player exactly above the first platform
