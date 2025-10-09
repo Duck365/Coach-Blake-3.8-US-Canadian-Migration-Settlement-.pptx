@@ -12,7 +12,7 @@ canvas.height = window.innerHeight;
 const player = { x: 0, y: 0, w: 3, h: 3, vx: 0, vy: 0, speed: 2, jump: -5, onGround: false };
 
 // Platform settings
-const PLATFORM_WIDTH = 40; // Longer for enemies
+const PLATFORM_WIDTH = 60; // Longer for enemies
 const PLATFORM_HEIGHT = 2;
 let platforms = [];
 let level = 1;
@@ -21,7 +21,7 @@ let level = 1;
 let enemies = [];
 let bullets = [];
 const ENEMY_SIZE = 3, ENEMY_COLOR = "red";
-const ENEMY_SPEED = 0.5; // SLOWER
+const ENEMY_SPEED = 0.5;
 const BULLET_WIDTH = 6, BULLET_HEIGHT = 2, BULLET_SPEED = 7;
 
 // Generate random platforms and enemies
@@ -30,17 +30,17 @@ function generatePlatforms() {
   enemies = [];
   bullets = [];
 
-  // Platform vertical spacing (closer together)
-  const spacing = Math.max(60, canvas.height / (6 + level));
+  // Platform vertical spacing (much closer now)
+  const spacing = 40;
 
   // Starting platform (always near bottom left)
-  let startPlat = { x: 30, y: canvas.height - 40, w: PLATFORM_WIDTH, h: PLATFORM_HEIGHT };
+  let startPlat = { x: 40, y: canvas.height - 40, w: PLATFORM_WIDTH, h: PLATFORM_HEIGHT };
   platforms.push(startPlat);
 
-  // Random middle platforms, spaced vertically
-  for (let i = 1; i < 4 + level; i++) {
+  // Random middle platforms, spaced vertically, with some horizontal randomness
+  for (let i = 1; i < 5 + Math.floor(level/2); i++) {
     let plat = {
-      x: 60 + Math.random() * (canvas.width - PLATFORM_WIDTH - 120),
+      x: 40 + Math.random() * (canvas.width - PLATFORM_WIDTH - 80),
       y: canvas.height - 40 - i * spacing,
       w: PLATFORM_WIDTH,
       h: PLATFORM_HEIGHT
@@ -63,10 +63,11 @@ function generatePlatforms() {
   let finishPlat = { x: canvas.width - 80, y: 40, w: PLATFORM_WIDTH, h: PLATFORM_HEIGHT, finish: true };
   platforms.push(finishPlat);
 
-  // Spawn player on top of the first platform
+  // Spawn player exactly above the first platform and set onGround
   player.x = startPlat.x + startPlat.w / 2 - player.w / 2;
   player.y = startPlat.y - player.h;
   player.vx = 0; player.vy = 0;
+  player.onGround = true;
 }
 
 // Draw everything
@@ -127,7 +128,8 @@ function update() {
   // Player move
   player.vx = (keys['a'] || keys['ArrowLeft']) ? -player.speed : (keys['d'] || keys['ArrowRight']) ? player.speed : 0;
   if ((keys['w'] || keys['ArrowUp'] || keys[' ']) && player.onGround) {
-    player.vy = player.jump; player.onGround = false;
+    player.vy = player.jump;
+    player.onGround = false;
   }
   player.vy += 0.2;
   player.x += player.vx;
@@ -155,7 +157,7 @@ function update() {
   });
 
   // FALLING: Restart if below screen
-  if (player.y > canvas.height) {
+  if (player.y > canvas.height + 10) {
     generatePlatforms();
   }
 
