@@ -11,8 +11,8 @@ canvas.height = window.innerHeight;
 const player = { x: 0, y: 0, w: 3, h: 3, vx: 0, vy: 0, speed: 2, jump: -5, onGround: false };
 
 // Platform settings
-const PLATFORM_WIDTH = 100; // MUCH longer platforms
-const PLATFORM_HEIGHT = 2;
+const PLATFORM_WIDTH = 5; // MUCH longer platforms
+const PLATFORM_HEIGHT = 1;
 let platforms = [];
 let level = 1;
 
@@ -20,8 +20,8 @@ let level = 1;
 let enemies = [];
 let bullets = [];
 const ENEMY_SIZE = 3, ENEMY_COLOR = "red";
-const ENEMY_SPEED = 0.22; // much slower
-const BULLET_WIDTH = 6, BULLET_HEIGHT = 2, BULLET_SPEED = 7;
+const ENEMY_SPEED = 0.50; // much slower
+const BULLET_WIDTH = 20, BULLET_HEIGHT = 20, BULLET_SPEED = 20;
 
 // Generate platforms and enemies
 function generatePlatforms() {
@@ -39,7 +39,7 @@ function generatePlatforms() {
   // Add more platforms, spaced closer and longer
   for (let i = 1; i < 6 + Math.floor(level/2); i++) {
     let plat = {
-      x: 40 + Math.random() * (canvas.width - PLATFORM_WIDTH - 80),
+      x: 40 + Math.random() * (canvas.width - PLATFORM_WIDTH - 4),
       y: canvas.height - 40 - i * spacing,
       w: PLATFORM_WIDTH,
       h: PLATFORM_HEIGHT
@@ -101,7 +101,7 @@ function draw() {
   ctx.arc(player.x + player.w/2, player.y + player.h/2, player.w/2, 0, Math.PI*2);
   ctx.fill();
   // Level text
-  ctx.font = "16px monospace";
+  ctx.font = "7px monospace";
   ctx.fillStyle = "black";
   ctx.fillText("Level: " + level, 20, 30);
 }
