@@ -8,7 +8,7 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 // This line sets the text that appears in the browser tab (the document title)
-document.title = "The Great Climb Adventure";
+document.title = "Coach-Blake-3.8-US-Canadian-Migration-Settlement-.pptx";
 
 // Player
 const player = { x: 0, y: 0, w: 3, h: 3, vx: 0, vy: 0, speed: 2, jump: -5, onGround: false };
@@ -159,26 +159,54 @@ window.onkeydown = e => {
   } else if (e.key === 'd' || e.key === 'ArrowRight') {
       lastDirection = 1;
   }
+
+  // NEW: R for Restart
+  if (e.key === 'r' || e.key === 'R') {
+      generatePlatforms();
+  }
   
   // Shoot with F or Enter
   if ((e.key === "f" || e.key === "F" || e.key === "Enter")) {
-    const bulletVelocity = BULLET_SPEED * lastDirection;
-    let startX;
+    let bulletVx = 0;
+    let bulletVy = 0;
+    let startX = player.x + player.w/2 - BULLET_WIDTH/2; // Default to center x
+    let startY = player.y + player.h/2 - BULLET_HEIGHT/2; // Default to center y
     
-    // Adjust starting position so the bullet appears on the edge of the player circle
-    if (lastDirection === 1) {
-        // Shooting Right: start at player's right edge
-        startX = player.x + player.w;
-    } else {
-        // Shooting Left: start at player's left edge minus bullet width
-        startX = player.x - BULLET_WIDTH;
+    const isUp = keys['w'] || keys['ArrowUp'];
+    const isDown = keys['s'] || keys['ArrowDown'];
+    const isLeft = keys['a'] || keys['ArrowLeft'];
+    const isRight = keys['d'] || keys['ArrowRight'];
+
+    // Determine direction
+    if (isUp && !isDown) { // Shooting Up (Vertical takes priority)
+        bulletVy = -BULLET_SPEED;
+    } else if (isDown && !isUp) { // Shooting Down
+        bulletVy = BULLET_SPEED;
+    } else { 
+        // Horizontal (or default to last direction)
+        if (isLeft && !isRight) {
+            bulletVx = -BULLET_SPEED;
+            startX = player.x - BULLET_WIDTH;
+        } else if (isRight && !isLeft) {
+            bulletVx = BULLET_SPEED;
+            startX = player.x + player.w;
+        } else {
+            // Default to last recorded horizontal direction
+            bulletVx = BULLET_SPEED * lastDirection;
+            if (lastDirection === -1) {
+                startX = player.x - BULLET_WIDTH;
+            } else {
+                startX = player.x + player.w;
+            }
+        }
     }
     
+    // Add the bullet
     bullets.push({
       x: startX,
-      y: player.y + player.h/2 - BULLET_HEIGHT/2,
-      vx: bulletVelocity, // Uses the tracked direction
-      vy: 0
+      y: startY,
+      vx: bulletVx,
+      vy: bulletVy
     });
   }
 };
@@ -211,7 +239,7 @@ function update() {
       player.x + player.w > p.x &&
       player.x < p.x + p.w &&
       player.y + player.h > p.y &&
-      player.y + player.h < p.y + p.h + 4 &&
+      player.y + player.h < p.y + p.h + 10 && // INCREASED BUFFER to prevent tunneling/falling through floor
       player.vy >= 0
     ) {
       player.y = p.y - player.h;
@@ -224,14 +252,13 @@ function update() {
     }
   });
 
-  // NOTE: FALLING DEATH removed. Player will now land on the continuous ground platform.
-
   // Update bullets
   bullets.forEach(b => {
     b.x += b.vx;
     b.y += b.vy;
   });
-  bullets = bullets.filter(b => b.x < canvas.width && b.x > 0);
+  // Filter bullets to remove them if they go off screen
+  bullets = bullets.filter(b => b.x < canvas.width && b.x > 0 && b.y > 0 && b.y < canvas.height);
 
   // Move red enemies, SLOWER
   enemies.forEach(e => {
@@ -262,8 +289,9 @@ function update() {
     }
   });
 
-  // Bullet/enemy collision (Health Logic)
+  // Bullet/enemy and Bullet/seeker collision
   bullets = bullets.filter(bullet => {
+    // 1. Check against red enemies (5 HP enemies)
     for (let i = 0; i < enemies.length; i++) {
       let e = enemies[i];
       if (
@@ -272,17 +300,30 @@ function update() {
         bullet.y < e.y + e.h &&
         bullet.y + BULLET_HEIGHT > e.y
       ) {
-        // Hit! Decrease health
+        // Hit red enemy! Decrease health
         e.hp -= 1; 
-        
         if (e.hp <= 0) {
-            // Remove enemy if health is depleted
             enemies.splice(i, 1);
         }
         return false; // remove bullet
       }
     }
-    return true;
+    
+    // 2. Check against purple seekers (1 HP enemies)
+    for (let i = 0; i < seekers.length; i++) {
+      let s = seekers[i];
+      if (
+        bullet.x < s.x + s.w &&
+        bullet.x + BULLET_WIDTH > s.x &&
+        bullet.y < s.y + s.h &&
+        bullet.y + BULLET_HEIGHT > s.y
+      ) {
+        seekers.splice(i, 1); // Remove seeker
+        return false; // remove bullet
+      }
+    }
+    
+    return true; // Keep bullet if no collision
   });
 
   // Enemy/player collision (restart)
