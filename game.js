@@ -11,7 +11,7 @@ canvas.height = window.innerHeight;
 const player = { x: 0, y: 0, w: 3, h: 3, vx: 0, vy: 0, speed: 2, jump: -5, onGround: false };
 
 // Platform settings
-const PLATFORM_WIDTH = 5; // MUCH longer platforms
+const PLATFORM_WIDTH = 4; // MUCH longer platforms
 const PLATFORM_HEIGHT = 1;
 let platforms = [];
 let level = 1;
@@ -21,7 +21,7 @@ let enemies = [];
 let bullets = [];
 const ENEMY_SIZE = 3, ENEMY_COLOR = "red";
 const ENEMY_SPEED = 0.50; // much slower
-const BULLET_WIDTH = 20, BULLET_HEIGHT = 20, BULLET_SPEED = 70;
+const BULLET_WIDTH = 8, BULLET_HEIGHT = 5, BULLET_SPEED = 100;
 
 // Generate platforms and enemies
 function generatePlatforms() {
@@ -30,14 +30,15 @@ function generatePlatforms() {
   bullets = [];
 
   // Platform vertical spacing (super close)
-  const spacing = 20;
+  const spacing = 28;
 
   // First platform (bottom left)
   let startPlat = { x: 40, y: canvas.height - 40, w: PLATFORM_WIDTH, h: PLATFORM_HEIGHT };
   platforms.push(startPlat);
 
   // Add more platforms, spaced closer and longer
-  for (let i = 1; i < 6 + Math.floor(level/2); i++) {
+  // I increased the base number of platforms from 10 to 30! (20 more!)
+  for (let i = 1; i < 30 + Math.floor(level/2); i++) {
     let plat = {
       x: 40 + Math.random() * (canvas.width - PLATFORM_WIDTH - 4),
       y: canvas.height - 40 - i * spacing,
@@ -58,8 +59,9 @@ function generatePlatforms() {
       });
     }
   }
-  // Finish platform (top right)
-  let finishPlat = { x: canvas.width - 120, y: 40, w: 100, h: 20, finish: true };
+  
+  // FINISH PLATFORM (Now properly sized to be visible!)
+  let finishPlat = { x: canvas.width - 120, y: 40, w: 100, h: 20, finish: true }; // W: 100, H: 20
   platforms.push(finishPlat);
 
   // Spawn player exactly above the first platform
@@ -101,7 +103,7 @@ function draw() {
   ctx.arc(player.x + player.w/2, player.y + player.h/2, player.w/2, 0, Math.PI*2);
   ctx.fill();
   // Level text
-  ctx.font = "7px monospace";
+  ctx.font = "16px monospace";
   ctx.fillStyle = "black";
   ctx.fillText("Level: " + level, 20, 30);
 }
