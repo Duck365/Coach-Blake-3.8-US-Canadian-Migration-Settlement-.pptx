@@ -30,7 +30,7 @@ function generatePlatforms() {
   bullets = [];
 
   // Platform vertical spacing (super close)
-  const spacing = 28;
+  const spacing = 20;
 
   // First platform (bottom left)
   let startPlat = { x: 40, y: canvas.height - 40, w: PLATFORM_WIDTH, h: PLATFORM_HEIGHT };
