@@ -1,8 +1,7 @@
 // Load the background image
 const bgImage = new Image();
-bgImage.src = "background.jpg"; // Change this if your file has a different name
+bgImage.src = "background.jpg"; // Make sure this matches your file name
 
-// Set up the canvas
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
@@ -12,8 +11,8 @@ canvas.height = window.innerHeight;
 const player = { x: 0, y: 0, w: 3, h: 3, vx: 0, vy: 0, speed: 2, jump: -5, onGround: false };
 
 // Platform settings
-const PLATFORM_WIDTH = 60; // Longer for enemies
-const PLATFORM_HEIGHT = 1;
+const PLATFORM_WIDTH = 100; // MUCH longer platforms
+const PLATFORM_HEIGHT = 2;
 let platforms = [];
 let level = 1;
 
@@ -21,24 +20,24 @@ let level = 1;
 let enemies = [];
 let bullets = [];
 const ENEMY_SIZE = 3, ENEMY_COLOR = "red";
-const ENEMY_SPEED = 0.5;
+const ENEMY_SPEED = 0.22; // much slower
 const BULLET_WIDTH = 6, BULLET_HEIGHT = 2, BULLET_SPEED = 7;
 
-// Generate random platforms and enemies
+// Generate platforms and enemies
 function generatePlatforms() {
   platforms = [];
   enemies = [];
   bullets = [];
 
-  // Platform vertical spacing (much closer now)
-  const spacing = 20;
+  // Platform vertical spacing (super close)
+  const spacing = 28;
 
-  // Starting platform (always near bottom left)
+  // First platform (bottom left)
   let startPlat = { x: 40, y: canvas.height - 40, w: PLATFORM_WIDTH, h: PLATFORM_HEIGHT };
   platforms.push(startPlat);
 
-  // Random middle platforms, spaced vertically, with some horizontal randomness
-  for (let i = 1; i < 5 + Math.floor(level/2); i++) {
+  // Add more platforms, spaced closer and longer
+  for (let i = 1; i < 6 + Math.floor(level/2); i++) {
     let plat = {
       x: 40 + Math.random() * (canvas.width - PLATFORM_WIDTH - 80),
       y: canvas.height - 40 - i * spacing,
@@ -46,7 +45,7 @@ function generatePlatforms() {
       h: PLATFORM_HEIGHT
     };
     platforms.push(plat);
-    // 50% chance to put an enemy on this platform
+    // 50% chance to put an enemy
     if (Math.random() < 0.5) {
       enemies.push({
         x: plat.x + Math.random() * (plat.w - ENEMY_SIZE),
@@ -60,14 +59,14 @@ function generatePlatforms() {
     }
   }
   // Finish platform (top right)
-  let finishPlat = { x: canvas.width - 80, y: 40, w: PLATFORM_WIDTH, h: PLATFORM_HEIGHT, finish: true };
+  let finishPlat = { x: canvas.width - 120, y: 40, w: PLATFORM_WIDTH, h: PLATFORM_HEIGHT, finish: true };
   platforms.push(finishPlat);
 
-  // Spawn player exactly above the first platform and set onGround
+  // Spawn player exactly above the first platform
   player.x = startPlat.x + startPlat.w / 2 - player.w / 2;
   player.y = startPlat.y - player.h;
   player.vx = 0; player.vy = 0;
-  player.onGround = true;
+  player.onGround = false; // You can always jump now anyway!
 }
 
 // Draw everything
@@ -123,17 +122,22 @@ window.onkeydown = e => {
 };
 window.onkeyup = e => keys[e.key] = false;
 
-// Physics
+// Physics & Logic
 function update() {
   // Player move
   player.vx = (keys['a'] || keys['ArrowLeft']) ? -player.speed : (keys['d'] || keys['ArrowRight']) ? player.speed : 0;
-  if ((keys['w'] || keys['ArrowUp'] || keys[' ']) && player.onGround) {
+
+  // Unlimited jumps: you can ALWAYS jump when you press jump!
+  if (keys['w'] || keys['ArrowUp'] || keys[' ']) {
     player.vy = player.jump;
-    player.onGround = false;
+    // Prevent holding down jump for super-float: reset jump key immediately after jumping
+    keys['w'] = keys['ArrowUp'] = keys[' '] = false;
   }
+
   player.vy += 0.2;
   player.x += player.vx;
   player.y += player.vy;
+
   if (player.x < 0) player.x = 0;
   if (player.x + player.w > canvas.width) player.x = canvas.width - player.w;
 
@@ -151,7 +155,8 @@ function update() {
       player.vy = 0;
       player.onGround = true;
       if (p.finish) {
-        level++; generatePlatforms();
+        level++;
+        generatePlatforms();
       }
     }
   });
@@ -205,7 +210,7 @@ function update() {
   });
 }
 
-// Loop
+// Main loop
 function loop() { update(); draw(); requestAnimationFrame(loop); }
 generatePlatforms();
 loop();
