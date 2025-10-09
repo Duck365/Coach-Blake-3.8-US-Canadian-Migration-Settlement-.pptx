@@ -7,6 +7,9 @@ const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
+// This line sets the text that appears in the browser tab (the document title)
+document.title = "Coach-Black-3.8-US-Canadian-Migration-Settlement-.pptx";
+
 // Player
 const player = { x: 0, y: 0, w: 3, h: 3, vx: 0, vy: 0, speed: 2, jump: -5, onGround: false };
 
@@ -21,7 +24,7 @@ let enemies = [];
 let bullets = [];
 const ENEMY_SIZE = 3, ENEMY_COLOR = "red";
 const ENEMY_SPEED = 0.50; // much slower
-const BULLET_WIDTH = 8, BULLET_HEIGHT = 5, BULLET_SPEED = 100;
+const BULLET_WIDTH = 12, BULLET_HEIGHT = 8, BULLET_SPEED = 100;
 
 // Generate platforms and enemies
 function generatePlatforms() {
