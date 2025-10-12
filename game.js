@@ -8,7 +8,7 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 // This line sets the text that appears in the browser tab (the document title)
-document.title = "Coach-Blake-3.8-US-Canadian-Migration-Settlement-.pptx";
+document.title = "DeltaMath Student Application";
 
 // Player
 const player = { x: 0, y: 0, w: 3, h: 3, vx: 0, vy: 0, speed: 2, jump: -5, onGround: false };
