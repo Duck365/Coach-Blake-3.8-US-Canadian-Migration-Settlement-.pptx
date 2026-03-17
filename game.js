@@ -1,6 +1,6 @@
 // Load the background image
 const bgImage = new Image();
-bgImage.src = "background.jpg"; // Make sure this matches your file name
+bgImage.src = "Screenshot 2026-03-17 8.14.02 AM.png"; // Make sure this matches your file name
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -8,7 +8,7 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 // This line sets the text that appears in the browser tab (the document title)
-document.title = "DeltaMath Student Application";
+document.title = "Jay Smith - March 17 Analysis Chart - AP - Conflict";
 
 // Player
 const player = { x: 0, y: 0, w: 3, h: 3, vx: 0, vy: 0, speed: 2, jump: -5, onGround: false };
